@@ -15,7 +15,8 @@ class ExpenseTrackerCLI:
         print("1. Register a new expense")
         print("2. Show all expenses")
         print("3. Show expenses by category")
-        print("4. Exit")
+        print("4. Delete an expense from the database")
+        print("5. Exit")
 
     def main(self):
         """Initializes the app"""
@@ -30,6 +31,8 @@ class ExpenseTrackerCLI:
             elif option == "3":
                 self._showExpensesByCategory()
             elif option == "4":
+                self._removeExpense()
+            elif option == "5":
                 sys.exit()
             else:
                 print("No valid option selected!\n")
@@ -53,21 +56,22 @@ class ExpenseTrackerCLI:
         except ValueError:
             print("\n Error: the amount must be a valid number")
 
-    def _showAllExpenses(self):
+    def _showAllExpenses(self) -> None:
         """Retrieve all registries in DB and show them"""
-        print("This are all the expenses registered")
         expenses = self.repo.fetch_all_expenses()
 
         if not expenses:
             print("There is no expenses registered yet\n")
             return
 
+        print("\nThese are all the expenses registered")
+
         for e in expenses:
             print(
                 f"ID:{e.id} | Amount {e.amount} | Date: {e.date} | Category: {e.category} | Description: {e.description or 'NA'}"
             )
 
-    def _showExpensesByCategory(self):
+    def _showExpensesByCategory(self) -> None:
         """Retrieve expenses and filter them by category"""
         category = input("Enter a category to filter: ")
         expenses = self.repo.fetch_expenses_by_category(category=category)
@@ -80,6 +84,27 @@ class ExpenseTrackerCLI:
             print(
                 f"ID:{e.id} | Amount {e.amount} | Date: {e.date} | Category: {e.category} | Description: {e.description or 'NA'}"
             )
+
+    def _removeExpense(self) -> None:
+        """Remove a selected expense from DB"""
+        self._showAllExpenses()
+        try:
+            id = int(input("Enter the expense ID to remove from DB: "))
+            confirmation = input(
+                f"Are you sure you want to remove this registry {id}? (s/n)"
+            )
+
+            if confirmation == "s":
+                expense_deleted = self.repo.remove_expense(id=id)
+                if expense_deleted:
+                    print(f"Expense with ID{id} deleted successfully")
+                else:
+                    print(f"There is no expense with ID: {id}")
+            else:
+                print("\nOperation cancelled")
+
+        except ValueError:
+            print("Error: Please enter a valid expense number")
 
 
 if __name__ == "__main__":

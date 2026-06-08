@@ -55,7 +55,7 @@ class ExpenseRepository:
 
     def fetch_all_expenses(self) -> List[Expense]:
         """Fetch all expenses from the database and return the data in a list of Expense objects"""
-        query = "SELECT id, amount, category, description, date FROM expenses;"
+        query = """SELECT id, amount, category, description, date FROM expenses;"""
         expenses_list = []
 
         with self._get_db_connection() as conn:
@@ -98,3 +98,21 @@ class ExpenseRepository:
                 expenses_list.append(expense_obj)
 
         return expenses_list
+
+    def remove_expense(self, id: int) -> bool:
+        """Removes a specified expense from the DB"""
+        query = """DELETE FROM expenses WHERE id = ?;"""
+        row_affected = 0
+
+        try:
+            with self._get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(query, (id,))
+                conn.commit()
+                row_affected = cursor.rowcount
+
+        except Exception as e:
+            print(f"Error: {e}")
+            row_affected = 0
+
+        return row_affected > 0
